@@ -14,6 +14,7 @@ const About = () => {
     const fetchUsers = async () => {
       setLoading(true);
       const data = await getUsers();
+      console.log("Loaded users:", data);
       setUsers(data);
       setLoading(false);
     };
@@ -24,8 +25,14 @@ const About = () => {
     setUsers((prev) => [...prev, newUser]);
   };
 
-  const removeUserFromState = (id: number) => {
+  const removeUserFromState = (id: string | number) => {
     setUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const updateUserInState = (updatedUser: UserType) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    );
   };
 
   return (
@@ -47,7 +54,7 @@ const About = () => {
         </div>
 
         {loading ? (
-          <div className="text-center text-yellow-500 text-2xl">Loading...</div>
+          <div className="text-center text-yellow-500 text-2xl">Yuklanmoqda...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             {users.length > 0 ? (
@@ -56,11 +63,12 @@ const About = () => {
                   key={user.id}
                   {...user}
                   removeFromState={removeUserFromState}
+                  updateUserInState={updateUserInState}
                 />
               ))
             ) : (
               <div className="col-span-full text-center text-gray-400 italic text-xl">
-                The registry is empty. Summon new heroes...
+                Ro'yxat bo'sh. Yangi foydalanuvchi qo'shing...
               </div>
             )}
           </div>

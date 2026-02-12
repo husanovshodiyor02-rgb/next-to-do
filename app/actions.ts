@@ -17,6 +17,7 @@ export const getUsers = async (): Promise<UserType[]> => {
     }
     
     const data = await response.json();
+    console.log("Fetched users:", data);
     return data;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -48,12 +49,39 @@ export const addUsers = async (data: FormData) => {
   }
 };
 
-export const deleteUser = async (id: number) => {
+export const updateUser = async (id: string | number, data: FormData) => {
   try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to update user:", response.status);
+      return null;
+    }
+
+    const updatedUser = await response.json();
+    revalidatePath("/about");
+    return updatedUser;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return null;
+  }
+};
+
+export const deleteUser = async (id: string | number) => {
+  try {
+    console.log("Deleting user with ID:", id);
     const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
     });
 
+    console.log("Delete response status:", response.status);
+    
     if (!response.ok) {
       console.error("Failed to delete user:", response.status);
       return false;
