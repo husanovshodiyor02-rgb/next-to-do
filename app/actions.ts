@@ -1,55 +1,68 @@
 "use server";
 
 import { FormData, UserType } from "@/@types";
-// revalidateTag o'rniga revalidatePath chaqiramiz
 import { revalidatePath } from "next/cache";
 
-const API_URL = process.env.API_URL;
+const API_URL = "https://69369720f8dc350aff316930.mockapi.io/users";
 
 export const getUsers = async (): Promise<UserType[]> => {
   try {
-    const data = await fetch(`${API_URL}`, {
-      // Tags kerak emas, shunchaki keshni o'chiramiz
+    const response = await fetch(API_URL, {
       cache: "no-store",
     });
-    if (!data.ok) return [];
-    return await data.json();
+    
+    if (!response.ok) {
+      console.error("Failed to fetch users:", response.status);
+      return [];
+    }
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching users:", error);
     return [];
   }
 };
 
 export const addUsers = async (data: FormData) => {
   try {
-    const post = await fetch(`${API_URL}`, {
+    const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
 
-    if (post.ok) {
-      // Sahifani to'liq yangilash (tag o'rniga)
-      revalidatePath("/about");
-      return await post.json();
+    if (!response.ok) {
+      console.error("Failed to add user:", response.status);
+      return null;
     }
+
+    const newUser = await response.json();
+    revalidatePath("/about");
+    return newUser;
   } catch (error) {
-    throw new Error("Failed to add user");
+    console.error("Error adding user:", error);
+    return null;
   }
 };
 
 export const deleteUser = async (id: number) => {
   try {
-    const deleteReq = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
     });
 
-    if (deleteReq.ok) {
-      // Sahifani to'liq yangilash
-      revalidatePath("/about");
-      return true;
+    if (!response.ok) {
+      console.error("Failed to delete user:", response.status);
+      return false;
     }
+
+    revalidatePath("/about");
+    return true;
   } catch (error) {
-    throw new Error("Failed to delete user");
+    console.error("Error deleting user:", error);
+    return false;
   }
 };
